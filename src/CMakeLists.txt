@@ -14,6 +14,7 @@ set(HEADER_FILES
     camera.h
     editor.h
     model.h
+    log.h
     pch.h
     texture_wic.h
     utility.h

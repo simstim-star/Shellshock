@@ -28,13 +28,15 @@ std::optional<Model> AssetLoader::LoadModel(ID3D11Device *device, std::string_vi
 
 	if (!scene || !scene->HasMeshes()) {
 		std::string errorMsg = std::format("Failed to load model asset.\n\nPath: {}\nError: {}", path, importer.GetErrorString());
-		TGW::Logger::AddLog(errorMsg, TGW::LogType::INFO);
+		TGW::Logger::LogInfo(errorMsg);
 		return {};
 	}
 
-	std::string basePath = std::filesystem::path{path}.parent_path().string();
+	std::filesystem::path fsPath{path};
+	std::string basePath = fsPath.parent_path().string();
 
 	Model model;
+	model.name = fsPath.filename().string();
 	for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
 		model.materials.push_back(LoadMaterial(device, scene->mMaterials[i], basePath));
 	}

@@ -3,6 +3,7 @@
 
 #include "shaders.h"
 #include "utility.h"
+#include "metadata.h"
 #include <variant>
 
 #include <d3dcompiler.h>
@@ -169,7 +170,11 @@ void TGW::Editor::Update()
 {
 	_camera.HandleMouse(_hwnd);
 	_matView = _camera.LookAt();
-	_gui->Update();
+	std::vector<TGW::GUI::AssetMetadata> assetsMetadata;
+	for (const auto &model : _models) {
+		assetsMetadata.push_back(TGW::GUI::AssetMetadata{model.name});
+	}
+	_gui->Update(TGW::GUI::EditorMetadata{assetsMetadata});
 	ProcessUICommands();
 }
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace TGW {
-enum class LogType { INFO };
+enum class LogType { INFO, NUM_LOG_TYPES };
 
 struct LogEntry {
 	std::string message;
@@ -25,16 +25,18 @@ struct LogEntry {
 
 class Logger {
   public:
-	inline static void AddLog(const std::string &fmt, LogType type) { Get()._items.push_back({fmt, type}); }
-	inline static void Clear() { Get()._items.clear(); }
-	inline static const std::vector<LogEntry> &GetAll() { return Get()._items; }
+	inline static void LogInfo(const std::string &log) { Log(log, LogType::INFO); }
+	inline static void Clear() { Get()._entries.clear(); }
+	inline static const std::vector<LogEntry> &GetAll() { return Get()._entries; }
 
   private:
+	inline static void Log(const std::string &log, LogType type) { Get()._entries.push_back({log, type}); }
+
 	inline static Logger &Get()
 	{
 		static Logger instance;
 		return instance;
 	}
-	std::vector<LogEntry> _items;
+	std::vector<LogEntry> _entries;
 };
 } // namespace TGW

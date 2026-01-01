@@ -1,5 +1,7 @@
 #pragma once
+
 #include "../actions.h"
+#include "../metadata.h"
 #include <d3d11.h>
 #include <vector>
 #include <windows.h>
@@ -14,16 +16,21 @@ class Base {
   public:
 	~Base();
 	virtual void Render();
-	virtual void Update();
+	virtual void Update(const EditorMetadata &editorMetadata);
 };
 
 class EditorMain : public Base {
   public:
 	EditorMain(std::vector<EditorCommand> &commandQueue) : _queue(commandQueue) {}
-	void Update() override;
+	void Update(const EditorMetadata &editorMetadata) override;
+
+	void GenerateDockspace();
+
+	void UpdateTopMenu();
 
   private:
 	void UpdateLogs();
+	void UpdateAssets(const EditorMetadata &editorMetadata);
 	std::vector<EditorCommand> &_queue;
 };
 } // namespace TGW::GUI

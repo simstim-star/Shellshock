@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <memory>
 #include <string_view>
+#include <string>
 #include <vector>
 #include <wrl/client.h>
 
@@ -30,6 +31,7 @@ struct Material {
 };
 
 struct Model {
+	std::string name;
 	std::vector<Mesh> meshes;
 	std::vector<Material> materials;
 };
