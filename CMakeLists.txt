@@ -34,5 +34,13 @@ FetchContent_MakeAvailable(imgui_filedialog)
 
 target_include_directories(ImGuiFileDialog PUBLIC ${imgui_SOURCE_DIR})
 
+# DirectXTK
+FetchContent_Declare(
+    directxtk
+    GIT_REPOSITORY https://github.com/microsoft/DirectXTK.git
+    GIT_TAG        main 
+)
+FetchContent_MakeAvailable(directxtk)
+
 # --- Sudirectories ---
 add_subdirectory(src)

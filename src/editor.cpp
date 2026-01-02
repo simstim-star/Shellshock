@@ -1,9 +1,7 @@
 #include "editor.h"
-#include "texture_wic.h"
 
 #include "shaders.h"
 #include "utility.h"
-#include "metadata.h"
 #include <variant>
 
 #include <d3dcompiler.h>

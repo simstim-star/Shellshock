@@ -120,7 +120,7 @@ void TGW::GUI::EditorMain::UpdateTopMenu()
 			if (ImGui::MenuItem("Open Model...", "Ctrl+O")) {
 				IGFD::FileDialogConfig config;
 				config.path = ".";
-				ImGuiFileDialog::Instance()->OpenDialog(CHOOSE_MODEL_DIALOG_KEY, "Choose Model", ".obj,.fbx,.gltf,.stl", config);
+				ImGuiFileDialog::Instance()->OpenDialog(CHOOSE_MODEL_DIALOG_KEY, "Choose Model", ".obj,.fbx,.gltf,.glb", config);
 			}
 			ImGui::EndMenu();
 		}

@@ -1,7 +1,7 @@
 set(SOURCE_FILES 
     main.cpp 
     editor.cpp 
-    texture_wic.cpp 
+    texture.cpp 
     asset_loader.cpp 
     camera.cpp 
     shaders.cpp 
@@ -17,7 +17,7 @@ set(HEADER_FILES
     model.h
     log.h
     pch.h
-    texture_wic.h
+    texture.h
     utility.h
     shaders.h
     gui/gui.h
@@ -69,6 +69,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     user32 
     assimp::assimp 
     ImGuiFileDialog
+    DirectXTK
 )
 
 # Copy shaders to build folder
