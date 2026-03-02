@@ -2,23 +2,34 @@
 
 #include "shaders.h"
 #include "utility.h"
-#include <variant>
 #include <array>
+#include <variant>
 
 #include <d3dcompiler.h>
 #include <log.h>
 #pragma comment(lib, "d3dcompiler.lib")
 
-using namespace DirectX;
+#include <imgui_impl_win32.h>
 
+using namespace DirectX;
 constexpr float CLEAR_COLOR[] = {0.1f, 0.2f, 0.6f, 1.0f};
 
-void TGW::Editor::Init(HWND hwnd)
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+TGW::Editor::Editor(HINSTANCE hInstance)
 {
-	_hwnd = hwnd;
+	WNDCLASS wc = {};
+	wc.lpfnWndProc = WndProc;
+	wc.hInstance = hInstance;
+	wc.lpszClassName = L"TGW";
+	RegisterClass(&wc);
+	_hwnd = CreateWindowEx(
+		0, wc.lpszClassName, L"TGW", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance,
+		this);
 
 	RECT rc;
-	GetClientRect(hwnd, &rc);
+	GetClientRect(_hwnd, &rc);
 	UINT width = rc.right - rc.left;
 	UINT height = rc.bottom - rc.top;
 
@@ -29,7 +40,7 @@ void TGW::Editor::Init(HWND hwnd)
 	scd.BufferDesc.Height = height;
 	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	scd.OutputWindow = hwnd;
+	scd.OutputWindow = _hwnd;
 	scd.SampleDesc.Count = 1;
 	scd.Windowed = TRUE;
 	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -75,10 +86,22 @@ void TGW::Editor::Init(HWND hwnd)
 	ASSERT_SUCCEEDED(_device->CreateTexture2D(&dtd, nullptr, depthBuffer.GetAddressOf()));
 	ASSERT_SUCCEEDED(_device->CreateDepthStencilView(depthBuffer.Get(), nullptr, &_dsv));
 
-	TGW::GUI::Init(hwnd, _device.Get(), _context.Get());
+	TGW::GUI::Init(_hwnd, _device.Get(), _context.Get());
 	_gui = std::make_unique<TGW::GUI::EditorMain>(_uiCommandQueue);
+	_assetLoader = AssetLoader{_device.Get()};
+}
 
+void TGW::Editor::Run(int nCmdShow)
+{
 	LoadAssets();
+	ShowWindow(_hwnd, nCmdShow);
+	MSG msg = {};
+	while (msg.message != WM_QUIT) {
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 }
 
 void TGW::Editor::Resize(UINT width, UINT height)
@@ -155,7 +178,7 @@ void TGW::Editor::DrawModel(const Model &model)
 		std::array<ID3D11ShaderResourceView *, 4> srvs = {
 		  material.diffuse ? material.diffuse.Get() : nullptr, material.specular ? material.specular.Get() : nullptr,
 		  material.normal ? material.normal.Get() : nullptr, material.roughness ? material.roughness.Get() : nullptr};
-		
+
 		_context->PSSetShaderResources(0, srvs.size(), srvs.data());
 
 		UINT stride = sizeof(Vertex);
@@ -221,10 +244,10 @@ void TGW::Editor::ProcessUICommands()
 				using T = std::decay_t<decltype(arg)>;
 
 				if constexpr (std::is_same_v<T, LoadModelCommand>) {
-					auto newModel = AssetLoader::LoadModel(_device.Get(), arg.path);
+					auto newModel = _assetLoader.LoadModel(arg.path);
 					if (newModel) {
 						// TODO: find a better way to set an id for the model
-						newModel.value().id = _models.size(); 
+						newModel.value().id = _models.size();
 						_models.push_back(std::move(newModel.value()));
 					}
 				} else if constexpr (std::is_same_v<T, SelectModelCommand>) {
@@ -235,4 +258,45 @@ void TGW::Editor::ProcessUICommands()
 			cmd);
 	}
 	_uiCommandQueue.clear();
+}
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	TGW::Editor *editor = reinterpret_cast<TGW::Editor *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+	switch (msg) {
+	case WM_NCCREATE: {
+		LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+		return TRUE;
+	}
+	case WM_MOUSEWHEEL:
+		if (editor) {
+			short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+			editor->GetCamera().HandleZoom(wheelDelta);
+		}
+		return FALSE;
+	case WM_SIZE:
+		if (editor && wParam != SIZE_MINIMIZED) {
+			UINT width = LOWORD(lParam);
+			UINT height = HIWORD(lParam);
+			editor->Resize(width, height);
+		}
+		return 0;
+	case WM_PAINT:
+		if (editor) {
+			editor->Update();
+			editor->Render();
+		}
+		return FALSE;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return FALSE;
+	}
+
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
+		return true;
+	}
+
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }

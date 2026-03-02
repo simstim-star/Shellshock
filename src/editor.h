@@ -15,8 +15,8 @@ namespace TGW {
 
 class Editor {
   public:
-	Editor() {}
-	void Init(HWND hwnd);
+	Editor(HINSTANCE hInstance);
+	void Run(int nCmdShow);
 	void Resize(UINT width, UINT height);
 	void Render();
 	void DrawModel(const Model &model);
@@ -51,5 +51,7 @@ class Editor {
 	std::unique_ptr<GUI::Base> _gui;
 
 	std::vector<EditorCommand> _uiCommandQueue;
+
+	AssetLoader _assetLoader;
 };
 } // namespace TGW

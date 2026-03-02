@@ -10,13 +10,15 @@
 
 using Microsoft::WRL::ComPtr;
 
+struct aiMesh;
+
 struct Vertex {
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 normal;
 	DirectX::XMFLOAT2 texCoords;
 };
 
-struct Mesh {
+struct MeshBuffer {
 	ComPtr<ID3D11Buffer> vertexBuffer;
 	ComPtr<ID3D11Buffer> indexBuffer;
 	uint32_t indexCount = 0;
@@ -34,6 +36,6 @@ struct Model {
 	std::string name;
 	UINT id;
 	DirectX::XMFLOAT3 position;
-	std::vector<Mesh> meshes;
+	std::vector<MeshBuffer> meshes;
 	std::vector<Material> materials;
 };
