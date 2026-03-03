@@ -87,7 +87,17 @@ TGW::Editor::Editor(HINSTANCE hInstance)
 	ASSERT_SUCCEEDED(_device->CreateDepthStencilView(depthBuffer.Get(), nullptr, &_dsv));
 
 	TGW::GUI::Init(_hwnd, _device.Get(), _context.Get());
-	_gui = std::make_unique<TGW::GUI::EditorMain>(_uiCommandQueue);
+	_gui = std::make_unique<TGW::GUI::EditorMain>([&](std::string path) {
+		auto newModel = _assetLoader.LoadModel(path);
+		if (newModel) {
+			// TODO: find a better way to set an id for the model
+			newModel.value().id = _models.size();
+			_models.push_back(std::move(newModel.value()));
+		}}
+		, [&](UINT id) {
+			const DirectX::XMVECTOR modelPos = DirectX::XMLoadFloat3(&_models[id].position);
+			_camera.SetTarget(modelPos);
+			});
 	_assetLoader = AssetLoader{_device.Get()};
 }
 
@@ -198,7 +208,6 @@ void TGW::Editor::Update()
 		assetsMetadata.push_back(TGW::GUI::AssetMetadata{model.id, model.name});
 	}
 	_gui->Update(TGW::GUI::EditorMetadata{assetsMetadata});
-	ProcessUICommands();
 }
 
 void TGW::Editor::LoadAssets()
@@ -235,31 +244,6 @@ void TGW::Editor::LoadAssets()
 	ASSERT_SUCCEEDED(_device->CreateRasterizerState(&rasterDesc, &_rasterState));
 }
 
-// TODO: simplify this...
-void TGW::Editor::ProcessUICommands()
-{
-	for (const auto &cmd : _uiCommandQueue) {
-		std::visit(
-			[this](auto &&arg) {
-				using T = std::decay_t<decltype(arg)>;
-
-				if constexpr (std::is_same_v<T, LoadModelCommand>) {
-					auto newModel = _assetLoader.LoadModel(arg.path);
-					if (newModel) {
-						// TODO: find a better way to set an id for the model
-						newModel.value().id = _models.size();
-						_models.push_back(std::move(newModel.value()));
-					}
-				} else if constexpr (std::is_same_v<T, SelectModelCommand>) {
-					const DirectX::XMVECTOR modelPos = DirectX::XMLoadFloat3(&_models[arg.id].position);
-					_camera.SetTarget(modelPos);
-				}
-			},
-			cmd);
-	}
-	_uiCommandQueue.clear();
-}
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	TGW::Editor *editor = reinterpret_cast<TGW::Editor *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -273,7 +257,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		if (editor) {
 			short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-			editor->GetCamera().HandleZoom(wheelDelta);
+			editor->HandleZoom(wheelDelta);
 		}
 		return FALSE;
 	case WM_SIZE:

@@ -4,7 +4,6 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
-#include "actions.h"
 #include "camera.h"
 #include "gui/gui.h"
 #include <DirectXMath.h>
@@ -21,11 +20,11 @@ class Editor {
 	void Render();
 	void DrawModel(const Model &model);
 	void Update();
-	inline Camera &GetCamera() { return _camera; }
+
+	inline void HandleZoom(float wheelDelta) { _camera.HandleZoom(wheelDelta); }
 
   private:
 	void LoadAssets();
-	void ProcessUICommands();
 
 	HWND _hwnd;
 
@@ -49,8 +48,6 @@ class Editor {
 	Camera _camera;
 
 	std::unique_ptr<GUI::Base> _gui;
-
-	std::vector<EditorCommand> _uiCommandQueue;
 
 	AssetLoader _assetLoader;
 };

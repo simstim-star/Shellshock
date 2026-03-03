@@ -9,7 +9,6 @@ set(SOURCE_FILES
 )
 
 set(HEADER_FILES 
-    actions.h
     asset_loader.h
     camera.h
     metadata.h

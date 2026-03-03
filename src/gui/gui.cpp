@@ -129,7 +129,7 @@ void TGW::GUI::EditorMain::UpdateTopMenu()
 	if (ImGuiFileDialog::Instance()->Display(CHOOSE_MODEL_DIALOG_KEY)) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-			_queue.push_back(EditorCommand{LoadModelCommand{filePathName}});
+			_OnLoadModel(filePathName);
 			Logger::LogInfo("Loading Model " + filePathName);
 		}
 		ImGuiFileDialog::Instance()->Close();
@@ -187,7 +187,7 @@ void TGW::GUI::EditorMain::UpdateAssets(const EditorMetadata &editorMetadata)
 				ImGui::TableSetColumnIndex(0);
 				bool selected = false; //TODO: track this in EditorMetadata
 				if (ImGui::Selectable(asset.name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns)) {
-					_queue.push_back(EditorCommand{SelectModelCommand{asset.id}});
+					_OnSelectModel(asset.id);
 				}
 			}
 			ImGui::EndTable();

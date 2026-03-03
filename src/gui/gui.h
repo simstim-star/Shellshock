@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../actions.h"
 #include "../metadata.h"
 #include <d3d11.h>
 #include <vector>
 #include <windows.h>
+#include <queue>
+#include <functional>
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -21,7 +22,10 @@ class Base {
 
 class EditorMain : public Base {
   public:
-	EditorMain(std::vector<EditorCommand> &commandQueue) : _queue(commandQueue) {}
+	EditorMain(std::function<void(std::string)> OnLoadModel, std::function<void(UINT id)> OnSelectModel)
+		: _OnLoadModel{OnLoadModel}, _OnSelectModel{OnSelectModel}
+	{
+	}
 	void Update(const EditorMetadata &editorMetadata) override;
 
 	void GenerateDockspace();
@@ -31,6 +35,7 @@ class EditorMain : public Base {
   private:
 	void UpdateLogs();
 	void UpdateAssets(const EditorMetadata &editorMetadata);
-	std::vector<EditorCommand> &_queue;
+	std::function<void(std::string)> _OnLoadModel;
+	std::function<void(UINT id)> _OnSelectModel;
 };
 } // namespace TGW::GUI
