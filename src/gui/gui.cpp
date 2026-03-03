@@ -1,6 +1,7 @@
 #include "gui.h"
 
 #include "ImGuiFileDialog.h"
+#include "ImGuizmo.h"
 #include <d3d11.h>
 #include <imgui.h>
 #include <imgui_impl_dx11.h>

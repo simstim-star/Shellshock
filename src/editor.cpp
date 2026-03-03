@@ -194,7 +194,10 @@ void TGW::Editor::Update()
 	_matView = _camera.LookAt();
 	std::vector<TGW::GUI::AssetMetadata> assetsMetadata;
 	for (const auto &model : _models) {
-		assetsMetadata.push_back(TGW::GUI::AssetMetadata{model.second.id, model.second.name});
+		assetsMetadata.push_back(TGW::GUI::AssetMetadata{
+			.id = model.second.id, 
+			.name = model.second.name,
+		});
 	}
 	_gui->Update(TGW::GUI::EditorMetadata{assetsMetadata});
 }

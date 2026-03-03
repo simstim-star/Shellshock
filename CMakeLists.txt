@@ -33,6 +33,28 @@ FetchContent_MakeAvailable(imgui_filedialog)
 
 target_include_directories(ImGuiFileDialog PUBLIC ${imgui_SOURCE_DIR})
 
+# >>>>> ImGuizmo
+# Note: ImGuizmo does not have its own CMakeLists.txt
+FetchContent_Declare(imguizmo
+    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo
+    GIT_TAG master
+)
+FetchContent_GetProperties(imguizmo)
+
+if(NOT imguizmo_POPULATED)
+    FetchContent_Populate(imguizmo)
+    add_library(ImGuizmo STATIC 
+        ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp 
+        ${imguizmo_SOURCE_DIR}/ImGuizmo.h
+        ${imguizmo_SOURCE_DIR}/ImSequencer.cpp 
+        ${imguizmo_SOURCE_DIR}/ImCurveEdit.cpp
+    )
+
+    target_include_directories(ImGuizmo PRIVATE ${imgui_SOURCE_DIR})
+    target_include_directories(ImGuizmo PUBLIC ${imguizmo_SOURCE_DIR})
+    target_link_libraries(ImGuizmo PUBLIC imgui)
+endif()
+
 # >>>>> DirectXTK
 FetchContent_Declare(
     directxtk
@@ -43,3 +65,5 @@ FetchContent_MakeAvailable(directxtk)
 
 # >>>>> Sudirectories
 add_subdirectory(src)
+
+target_link_libraries(Shellshock PRIVATE ImGuizmo)
