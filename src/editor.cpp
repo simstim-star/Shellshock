@@ -86,18 +86,7 @@ TGW::Editor::Editor(HINSTANCE hInstance)
 	ASSERT_SUCCEEDED(_device->CreateTexture2D(&dtd, nullptr, depthBuffer.GetAddressOf()));
 	ASSERT_SUCCEEDED(_device->CreateDepthStencilView(depthBuffer.Get(), nullptr, &_dsv));
 
-	TGW::GUI::Init(_hwnd, _device.Get(), _context.Get());
-	_gui = std::make_unique<TGW::GUI::EditorMain>([&](std::string path) {
-		auto newModel = _assetLoader.LoadModel(path);
-		if (newModel) {
-			// TODO: find a better way to set an id for the model
-			newModel.value().id = _models.size();
-			_models.push_back(std::move(newModel.value()));
-		}}
-		, [&](UINT id) {
-			const DirectX::XMVECTOR modelPos = DirectX::XMLoadFloat3(&_models[id].position);
-			_camera.SetTarget(modelPos);
-			});
+	CreateGUI();
 	_assetLoader = AssetLoader{_device.Get()};
 }
 
@@ -173,8 +162,8 @@ void TGW::Editor::Render()
 
 	_context->PSSetSamplers(0, 1, _sampler.GetAddressOf());
 
-	for (Model &model : _models) {
-		DrawModel(model);
+	for (auto &model : _models) {
+		DrawModel(model.second);
 	}
 	_gui->Render();
 
@@ -205,7 +194,7 @@ void TGW::Editor::Update()
 	_matView = _camera.LookAt();
 	std::vector<TGW::GUI::AssetMetadata> assetsMetadata;
 	for (const auto &model : _models) {
-		assetsMetadata.push_back(TGW::GUI::AssetMetadata{model.id, model.name});
+		assetsMetadata.push_back(TGW::GUI::AssetMetadata{model.second.id, model.second.name});
 	}
 	_gui->Update(TGW::GUI::EditorMetadata{assetsMetadata});
 }
@@ -242,6 +231,30 @@ void TGW::Editor::LoadAssets()
 	rasterDesc.CullMode = D3D11_CULL_BACK;
 	rasterDesc.FrontCounterClockwise = false;
 	ASSERT_SUCCEEDED(_device->CreateRasterizerState(&rasterDesc, &_rasterState));
+}
+
+void TGW::Editor::CreateGUI()
+{
+	TGW::GUI::Init(_hwnd, _device.Get(), _context.Get());
+
+	auto OnLoadModel = [&](std::string path) {
+		auto newModel = _assetLoader.LoadModel(path);
+		if (newModel) {
+			newModel.value().id = _models.size();
+			_models.insert({newModel.value().id, std::move(newModel.value())});
+		}
+	};
+
+	auto OnSelectModel = [&](UINT id) {
+		const DirectX::XMVECTOR modelPos = DirectX::XMLoadFloat3(&_models[id].position);
+		_camera.SetTarget(modelPos);
+	};
+
+	auto OnRemoveModel = [&](UINT id) {
+		_models.erase(id); 
+	};
+
+	_gui = std::make_unique<TGW::GUI::EditorMain>(OnLoadModel, OnSelectModel, OnRemoveModel);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

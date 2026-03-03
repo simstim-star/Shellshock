@@ -22,8 +22,10 @@ class Base {
 
 class EditorMain : public Base {
   public:
-	EditorMain(std::function<void(std::string)> OnLoadModel, std::function<void(UINT id)> OnSelectModel)
-		: _OnLoadModel{OnLoadModel}, _OnSelectModel{OnSelectModel}
+	EditorMain(
+		std::function<void(std::string)> OnLoadModel, std::function<void(UINT id)> OnSelectModel,
+		std::function<void(UINT id)> OnRemoveModel)
+		: _OnLoadModel{OnLoadModel}, _OnSelectModel{OnSelectModel}, _OnRemoveModel{OnRemoveModel}
 	{
 	}
 	void Update(const EditorMetadata &editorMetadata) override;
@@ -37,5 +39,6 @@ class EditorMain : public Base {
 	void UpdateAssets(const EditorMetadata &editorMetadata);
 	std::function<void(std::string)> _OnLoadModel;
 	std::function<void(UINT id)> _OnSelectModel;
+	std::function<void(UINT id)> _OnRemoveModel;
 };
 } // namespace TGW::GUI

@@ -25,6 +25,7 @@ class Editor {
 
   private:
 	void LoadAssets();
+	void CreateGUI();
 
 	HWND _hwnd;
 
@@ -32,7 +33,6 @@ class Editor {
 	ComPtr<ID3D11DeviceContext> _context;
 	ComPtr<IDXGISwapChain> _swapchain;
 	ComPtr<ID3D11RenderTargetView> _rtv;
-	ComPtr<ID3D11ShaderResourceView> _texture;
 	ComPtr<ID3D11VertexShader> _vs;
 	ComPtr<ID3D11PixelShader> _ps;
 	ComPtr<ID3D11InputLayout> _inputLayout;
@@ -41,7 +41,7 @@ class Editor {
 	ComPtr<ID3D11Buffer> _cbMVP;
 	ComPtr<ID3D11RasterizerState> _rasterState;
 
-	std::vector<Model> _models;
+	std::unordered_map<UINT, Model> _models;
 
 	DirectX::XMMATRIX _matView;
 	DirectX::XMMATRIX _matProj;

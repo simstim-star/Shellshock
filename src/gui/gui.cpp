@@ -185,9 +185,15 @@ void TGW::GUI::EditorMain::UpdateAssets(const EditorMetadata &editorMetadata)
 
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
-				bool selected = false; //TODO: track this in EditorMetadata
+				bool selected = false; // TODO: track this in EditorMetadata
 				if (ImGui::Selectable(asset.name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns)) {
 					_OnSelectModel(asset.id);
+				}
+				if (ImGui::BeginPopupContextItem()) {
+					if (ImGui::Button("Remove Model")) {
+						_OnRemoveModel(asset.id);
+					}
+					ImGui::EndPopup();
 				}
 			}
 			ImGui::EndTable();
