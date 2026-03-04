@@ -144,26 +144,25 @@ void TGW::Editor::Resize(UINT width, UINT height)
 
 void TGW::Editor::Render()
 {
-	XMMATRIX world = XMMatrixIdentity();
-	XMMATRIX mvp = world * _matView * _matProj;
-	XMMATRIX mvpTransposed = XMMatrixTranspose(mvp);
-	_context->UpdateSubresource(_cbMVP.Get(), 0, nullptr, &mvpTransposed, 0, 0);
-
-	_context->VSSetConstantBuffers(0, 1, _cbMVP.GetAddressOf());
 	_context->RSSetState(_rasterState.Get());
 	_context->OMSetRenderTargets(1, _rtv.GetAddressOf(), _dsv.Get());
 	_context->ClearRenderTargetView(_rtv.Get(), CLEAR_COLOR);
 	_context->ClearDepthStencilView(_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
 	_context->IASetInputLayout(_inputLayout.Get());
 	_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 	_context->VSSetShader(_vs.Get(), nullptr, 0);
 	_context->PSSetShader(_ps.Get(), nullptr, 0);
-
 	_context->PSSetSamplers(0, 1, _sampler.GetAddressOf());
 
 	for (auto &model : _models) {
+
+		MVPConstantBuffer cb;
+		// Transpose for HLSL
+		cb.model = DirectX::XMMatrixTranspose(model.second.worldMatrix); 
+		cb.view = DirectX::XMMatrixTranspose(_camera.GetViewMatrix());
+		cb.projection = DirectX::XMMatrixTranspose(_camera.GetProjectionMatrix());
+		_context->UpdateSubresource(_cbMVP.Get(), 0, nullptr, &cb, 0, 0);
+		_context->VSSetConstantBuffers(0, 1, _cbMVP.GetAddressOf());
 		DrawModel(model.second);
 	}
 	_gui->Render();
@@ -231,7 +230,7 @@ void TGW::Editor::LoadAssets()
 
 	D3D11_BUFFER_DESC cbd = {};
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbd.ByteWidth = sizeof(XMMATRIX);
+	cbd.ByteWidth = sizeof(MVPConstantBuffer);
 	cbd.Usage = D3D11_USAGE_DEFAULT;
 	ASSERT_SUCCEEDED(_device->CreateBuffer(&cbd, nullptr, &_cbMVP));
 

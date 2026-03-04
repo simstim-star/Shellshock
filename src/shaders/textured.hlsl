@@ -1,6 +1,8 @@
 cbuffer MVP : register(b0)
 {
-    float4x4 mvp;
+    float4x4 model;
+    float4x4 view;
+    float4x4 projection;
 };
 
 struct VSInput
@@ -19,12 +21,14 @@ struct VSOutput
 VSOutput VSMain(VSInput input)
 {
     VSOutput o;
-    // Multiply vertex position by the MVP matrix
-    o.pos = mul(float4(input.pos, 1.0), mvp);
+    
+    float4 worldPos = mul(float4(input.pos, 1.0f), model);
+    float4 viewPos = mul(worldPos, view);
+    
+    o.pos = mul(viewPos, projection);
     o.uv = input.uv;
     return o;
 }
-
 
 Texture2D tex : register(t0);
 SamplerState samp : register(s0);

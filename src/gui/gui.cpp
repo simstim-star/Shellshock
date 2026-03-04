@@ -201,8 +201,9 @@ void TGW::GUI::MainUI::UpdateAssets(const EditorMetadata &editorMetadata)
 void TGW::GUI::MainUI::UpdateGizmo(Model &model, const Camera &camera)
 {
 	ImGuiIO &io = ImGui::GetIO();
+	ImGuizmo::BeginFrame();
 	ImGuizmo::AllowAxisFlip(false);
-	ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
+	ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	ImGuizmo::SetRect(viewport->Pos.x, viewport->Pos.y, viewport->Size.x, viewport->Size.y);
 
