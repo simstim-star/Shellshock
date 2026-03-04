@@ -7,7 +7,7 @@ using namespace DirectX;
 constexpr auto IS_KEY_DOWN_MASK = 0x8000;
 
 Camera::Camera()
-	: _position{XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f)}, _up{XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)}, _zoom{10.0f}, _minZoom{5.0f},
+	: _target{XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f)}, _up{XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)}, _zoom{10.0f}, _minZoom{5.0f},
 	  _maxZoom{15.0f}, _angle{XM_PIDIV4}, _speed{0.15f}, _lastMousePos{0, 0}, _moveSensitivity{0.005f}, _edgeSize{30},
 	  _zoomSensitivity{2.0f}
 {
@@ -18,10 +18,15 @@ Camera::Camera()
 	_forward = XMVector3TransformNormal(baseForward, combinedRot);
 }
 
-XMMATRIX Camera::LookAt() const
+XMMATRIX Camera::GetViewMatrix() const
 {
-	XMVECTOR eyePos = _position - (_forward * _zoom);
-	return XMMatrixLookAtLH(eyePos, _position, _up);
+	XMVECTOR eyePos = _target - (_forward * _zoom);
+	return XMMatrixLookAtLH(eyePos, _target, _up);
+}
+
+XMMATRIX Camera::GetProjectionMatrix() const
+{
+	return XMMatrixPerspectiveFovLH(XM_PIDIV4, _aspectRatio, 0.1f, 1000.0f);
 }
 
 void Camera::HandleMouse(HWND hwnd)
@@ -48,15 +53,15 @@ void Camera::HandleMouse(HWND hwnd)
 		XMVECTOR normRight = XMVector3Cross(worldUp, normForward);
 
 		if (cursorPosition.x < _edgeSize) {
-			_position -= normRight * _speed;
+			_target -= normRight * _speed;
 		} else if (cursorPosition.x > width - _edgeSize) {
-			_position += normRight * _speed;
+			_target += normRight * _speed;
 		}
 
 		if (cursorPosition.y < _edgeSize) {
-			_position += normForward * _speed;
+			_target += normForward * _speed;
 		} else if (cursorPosition.y > height - _edgeSize) {
-			_position -= normForward * _speed;
+			_target -= normForward * _speed;
 		}
 	}
 

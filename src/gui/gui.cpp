@@ -22,7 +22,7 @@ constexpr std::array<ImVec4, static_cast<size_t>(TGW::LogType::NUM_LOG_TYPES)> L
 
 /* Class implementations */
 
-TGW::GUI::Base::~Base()
+TGW::GUI::MainUI::~MainUI()
 {
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -42,14 +42,7 @@ void TGW::GUI::Init(HWND hwnd, ID3D11Device *device, ID3D11DeviceContext *contex
 	ImGui_ImplDX11_Init(device, context);
 }
 
-void TGW::GUI::Base::Update(const EditorMetadata &editorMetadata)
-{
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-}
-
-void TGW::GUI::Base::Render()
+void TGW::GUI::MainUI::Render()
 {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -59,9 +52,11 @@ void TGW::GUI::Base::Render()
 	}
 }
 
-void TGW::GUI::EditorMain::Update(const EditorMetadata &editorMetadata)
+void TGW::GUI::MainUI::Update(const EditorMetadata &editorMetadata)
 {
-	Base::Update(editorMetadata);
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 
 	GenerateDockspace();
 
@@ -72,7 +67,7 @@ void TGW::GUI::EditorMain::Update(const EditorMetadata &editorMetadata)
 	ImGui::End();
 }
 
-void TGW::GUI::EditorMain::GenerateDockspace()
+void TGW::GUI::MainUI::GenerateDockspace()
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground;
 	windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
@@ -112,7 +107,7 @@ void TGW::GUI::EditorMain::GenerateDockspace()
 	ImGui::DockSpace(masterDockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
-void TGW::GUI::EditorMain::UpdateTopMenu()
+void TGW::GUI::MainUI::UpdateTopMenu()
 {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
@@ -137,7 +132,7 @@ void TGW::GUI::EditorMain::UpdateTopMenu()
 	}
 }
 
-void TGW::GUI::EditorMain::UpdateLogs()
+void TGW::GUI::MainUI::UpdateLogs()
 {
 	if (ImGui::Begin("Logs")) {
 		if (ImGui::Button("Clear")) {
@@ -169,7 +164,7 @@ void TGW::GUI::EditorMain::UpdateLogs()
 	ImGui::End();
 }
 
-void TGW::GUI::EditorMain::UpdateAssets(const EditorMetadata &editorMetadata)
+void TGW::GUI::MainUI::UpdateAssets(const EditorMetadata &editorMetadata)
 {
 	if (ImGui::Begin("Assets")) {
 		static char assetFilter[64] = "";
@@ -201,4 +196,30 @@ void TGW::GUI::EditorMain::UpdateAssets(const EditorMetadata &editorMetadata)
 		}
 	}
 	ImGui::End();
+}
+
+void TGW::GUI::MainUI::UpdateGizmo(Model &model, const Camera &camera)
+{
+	ImGuiIO &io = ImGui::GetIO();
+	ImGuizmo::AllowAxisFlip(false);
+	ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
+	ImGuiViewport *viewport = ImGui::GetMainViewport();
+	ImGuizmo::SetRect(viewport->Pos.x, viewport->Pos.y, viewport->Size.x, viewport->Size.y);
+
+	float vMatrix[16];
+	DirectX::XMMATRIX view = camera.GetViewMatrix();
+	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4 *>(vMatrix), view);
+
+	float pMatrix[16];
+	DirectX::XMMATRIX proj = camera.GetProjectionMatrix();
+	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4 *>(pMatrix), proj);
+
+	float wMatrix[16];
+	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4 *>(wMatrix), model.worldMatrix);
+
+	ImGuizmo::Manipulate(vMatrix, pMatrix, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, wMatrix);
+
+	if (ImGuizmo::IsUsing()) {
+		model.worldMatrix = DirectX::XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4 *>(wMatrix));
+	}
 }

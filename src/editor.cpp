@@ -68,8 +68,9 @@ TGW::Editor::Editor(HINSTANCE hInstance)
 
 	float aspect = vp.Width / vp.Height;
 
-	_matView = XMMatrixLookAtLH(XMVectorSet(0.0f, 2.0f, -5.0f, 1.0f), XMVectorZero(), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	_camera.SetAspectRatio(aspect);
 
+	_matView = XMMatrixLookAtLH(XMVectorSet(0.0f, 2.0f, -5.0f, 1.0f), XMVectorZero(), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	_matProj = XMMatrixPerspectiveFovLH(_camera.GetAngle(), aspect, 0.1f, 100.0f);
 
 	D3D11_TEXTURE2D_DESC dtd = {};
@@ -191,7 +192,8 @@ void TGW::Editor::DrawModel(const Model &model)
 void TGW::Editor::Update()
 {
 	_camera.HandleMouse(_hwnd);
-	_matView = _camera.LookAt();
+	_matView = _camera.GetViewMatrix();
+	
 	std::vector<TGW::GUI::AssetMetadata> assetsMetadata;
 	for (const auto &model : _models) {
 		assetsMetadata.push_back(TGW::GUI::AssetMetadata{
@@ -199,7 +201,11 @@ void TGW::Editor::Update()
 			.name = model.second.name,
 		});
 	}
+
 	_gui->Update(TGW::GUI::EditorMetadata{assetsMetadata});
+	if (auto selectedModelId = _selectedModel) {
+		_gui->UpdateGizmo(_models[selectedModelId.value()], _camera);
+	}
 }
 
 void TGW::Editor::LoadAssets()
@@ -249,15 +255,16 @@ void TGW::Editor::CreateGUI()
 	};
 
 	auto OnSelectModel = [&](UINT id) {
-		const DirectX::XMVECTOR modelPos = DirectX::XMLoadFloat3(&_models[id].position);
+		DirectX::XMVECTOR modelPos = _models[id].worldMatrix.r[3];
 		_camera.SetTarget(modelPos);
+		_selectedModel = id;
 	};
 
 	auto OnRemoveModel = [&](UINT id) {
 		_models.erase(id); 
 	};
 
-	_gui = std::make_unique<TGW::GUI::EditorMain>(OnLoadModel, OnSelectModel, OnRemoveModel);
+	_gui = std::make_unique<TGW::GUI::MainUI>(OnLoadModel, OnSelectModel, OnRemoveModel);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

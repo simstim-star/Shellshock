@@ -3,8 +3,8 @@
 #include <DirectXMath.h>
 #include <d3d11.h>
 #include <memory>
-#include <string_view>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <wrl/client.h>
 
@@ -35,7 +35,7 @@ struct Material {
 struct Model {
 	std::string name;
 	UINT id;
-	DirectX::XMFLOAT3 position;
+	DirectX::XMMATRIX worldMatrix;
 	std::vector<MeshBuffer> meshes;
 	std::vector<Material> materials;
 };

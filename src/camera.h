@@ -5,15 +5,18 @@
 class Camera {
   public:
 	Camera();
-	DirectX::XMMATRIX LookAt() const;
+	DirectX::XMMATRIX GetViewMatrix() const;
 	void HandleMouse(HWND hwnd);
 	void HandleZoom(short delta);
 	
 	inline float GetAngle() { return _angle; }
-	inline void SetTarget(DirectX::FXMVECTOR pos) { _position = pos; }
+	inline void SetTarget(DirectX::FXMVECTOR target) { _target = target; }
+	inline void SetAspectRatio(float aspectRatio) { _aspectRatio = aspectRatio; }
+
+	DirectX::XMMATRIX GetProjectionMatrix() const;
 
   private:
-	DirectX::XMVECTOR _position;
+	DirectX::XMVECTOR _target;
 	DirectX::XMVECTOR _forward;
 	DirectX::XMVECTOR _up;
 
@@ -24,6 +27,7 @@ class Camera {
 	float _angle;
 	float _moveSensitivity;
 	float _zoomSensitivity;
+	float _aspectRatio;
 	int _edgeSize;
 
 	POINT _lastMousePos;

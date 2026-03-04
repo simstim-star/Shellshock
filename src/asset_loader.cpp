@@ -10,6 +10,7 @@
 #include <format>
 
 using Microsoft::WRL::ComPtr;
+DirectX::XMMATRIX ConvertToDirectXMatrix(aiMatrix4x4 from);
 
 /* Implementation of public functions */
 
@@ -30,7 +31,7 @@ std::optional<Model> AssetLoader::LoadModel(std::string_view path)
 
 	Model model;
 	model.name = fsPath.filename().string();
-	model.position = DirectX::XMFLOAT3{0, 0, 0};
+	model.worldMatrix = ConvertToDirectXMatrix(scene->mRootNode->mTransformation);
 	for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
 		model.materials.push_back(LoadMaterial(scene, scene->mMaterials[i], basePath));
 	}
@@ -124,4 +125,11 @@ Material AssetLoader::LoadMaterial(const aiScene *scene, const aiMaterial *mat, 
 	}
 
 	return m;
+}
+
+DirectX::XMMATRIX ConvertToDirectXMatrix(aiMatrix4x4 from)
+{
+	return DirectX::XMMATRIX(
+		from.a1, from.a2, from.a3, from.a4, from.b1, from.b2, from.b3, from.b4, from.c1, from.c2, from.c3, from.c4, from.d1,
+		from.d2, from.d3, from.d4);
 }

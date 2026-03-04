@@ -47,8 +47,10 @@ class Editor {
 	DirectX::XMMATRIX _matProj;
 	Camera _camera;
 
-	std::unique_ptr<GUI::Base> _gui;
+	std::unique_ptr<GUI::MainUI> _gui;
 
 	AssetLoader _assetLoader;
+
+	std::optional<UINT> _selectedModel = std::nullopt;
 };
 } // namespace TGW
