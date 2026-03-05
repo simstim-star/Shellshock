@@ -4,10 +4,7 @@
 
 A DirectX11 RTS Game
 
-<img width="968" height="677" alt="image" src="https://github.com/user-attachments/assets/ba59d63f-4d79-4ab4-a185-c0ef6919fa6b" />
-
-
-
+<img width="969" height="682" alt="image" src="https://github.com/user-attachments/assets/ffe6e240-f220-4928-8430-2cccacccafdb" />
 
 ## How to build
 
