@@ -1,11 +1,9 @@
 #include "texture.h"
 #include "log.h"
-#include "utility.h"
+
 #include "DDSTextureLoader.h"
 #include "WICTextureLoader.h"
 
-#include <d3d11.h>
-#include <filesystem>
 #include <wincodec.h>
 
 #define WIC_CHECK_SUCESS(hr)  \

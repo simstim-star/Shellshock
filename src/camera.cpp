@@ -1,5 +1,4 @@
 #include "camera.h"
-#include <algorithm>
 
 using namespace DirectX;
 
