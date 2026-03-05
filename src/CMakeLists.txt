@@ -15,7 +15,6 @@ set(HEADER_FILES
     editor.h
     model.h
     log.h
-    pch.h
     texture.h
     utility.h
     shaders.h
@@ -54,6 +53,7 @@ source_group("Libs" FILES ${LIB_FILES})
 # the source_group in Visual Studio
 # https://stackoverflow.com/a/31653555/14815076
 add_executable(${PROJECT_NAME} WIN32 ${ALL_PROJECT_FILES})
+target_precompile_headers(${PROJECT_NAME} PRIVATE pch.h)
 
 # Compiler Flags & Definitions
 target_compile_options(${PROJECT_NAME} PRIVATE /W4)

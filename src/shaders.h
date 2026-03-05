@@ -1,8 +1,6 @@
 #pragma once
 
-#include <d3dcompiler.h>
-#include <windows.h>
-#include <DirectXMath.h>
+#include "pch.h"
 
 struct ConstantBuffer {
 	DirectX::XMMATRIX model;

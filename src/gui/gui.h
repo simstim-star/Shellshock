@@ -1,14 +1,10 @@
 #pragma once
 
-#include "../metadata.h"
-#include <d3d11.h>
-#include <vector>
-#include <windows.h>
-#include <queue>
-#include <functional>
-
 #include "camera.h"
 #include "model.h"
+#include "../metadata.h"
+
+#include <functional>
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;

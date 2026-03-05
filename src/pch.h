@@ -1,4 +1,4 @@
-// From https://raw.githubusercontent.com/microsoft/DirectX-Graphics-Samples/e523de7644619497161a5ab822ec683e07c636ab/MiniEngine/Core/pch.h
+// Inspired by https://raw.githubusercontent.com/microsoft/DirectX-Graphics-Samples/e523de7644619497161a5ab822ec683e07c636ab/MiniEngine/Core/pch.h
 
 #pragma once
 
@@ -34,6 +34,8 @@
 #include <wrl/client.h>
 #include <wrl/event.h>
 
+#include <d3d11.h>
+#include <DirectXMath.h>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>
@@ -43,8 +45,11 @@
 #include <cstdio>
 #include <cstdarg>
 #include <vector>
+#include <array>
 #include <memory>
 #include <string>
+#include <string_view>
+#include <optional>
 #include <cwctype>
 #include <exception>
 

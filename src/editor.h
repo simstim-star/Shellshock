@@ -1,12 +1,11 @@
 #pragma once
 
+#include "pch.h"
+
 #include "asset_loader.h"
-#include <d3d11.h>
-#include <wrl/client.h>
 
 #include "camera.h"
 #include "gui/gui.h"
-#include <DirectXMath.h>
 
 using Microsoft::WRL::ComPtr;
 

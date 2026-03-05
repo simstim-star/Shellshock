@@ -1,16 +1,12 @@
 #include "texture.h"
-#include "DDSTextureLoader.h"
 #include "log.h"
 #include "utility.h"
-#include <WICTextureLoader.h>
-#include <assimp/scene.h>
-#include <cstdint>
+#include "DDSTextureLoader.h"
+#include "WICTextureLoader.h"
+
 #include <d3d11.h>
 #include <filesystem>
-#include <stdexcept>
-#include <vector>
 #include <wincodec.h>
-#include <wrl/client.h>
 
 #define WIC_CHECK_SUCESS(hr)  \
 	ASSERT_SUCCEEDED(hr);     \

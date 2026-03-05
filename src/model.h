@@ -1,16 +1,12 @@
 #pragma once
 
-#include <DirectXMath.h>
-#include <d3d11.h>
-#include <memory>
-#include <string>
-#include <string_view>
-#include <vector>
-#include <wrl/client.h>
+#include "pch.h"
 
 using Microsoft::WRL::ComPtr;
 
 struct aiMesh;
+struct ID3D11Buffer;
+struct ID3D11ShaderResourceView;
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;

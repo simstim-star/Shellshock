@@ -1,7 +1,6 @@
 #pragma once
 
-#include <windows.h>
-#include <wrl/client.h>
+#include "pch.h"
 
 using Microsoft::WRL::ComPtr;
 struct ID3D11ShaderResourceView;

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "pch.h"
 
 namespace TGW {
 enum class LogType { INFO, NUM_LOG_TYPES };

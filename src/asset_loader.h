@@ -1,8 +1,7 @@
 #pragma once
 
+#include "pch.h"
 #include "model.h"
-#include <optional>
-#include <string_view>
 
 struct ID3D11Device;
 struct aiScene;

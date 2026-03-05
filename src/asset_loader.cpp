@@ -2,12 +2,13 @@
 #include "log.h"
 #include "texture.h"
 #include "utility.h"
-#include <assimp/Importer.hpp>
+
+#include <assimp/importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include <d3d11.h>
 #include <filesystem>
-#include <format>
 
 using Microsoft::WRL::ComPtr;
 DirectX::XMMATRIX ConvertToDirectXMatrix(aiMatrix4x4 from);

@@ -1,13 +1,7 @@
 #include "editor.h"
-
 #include "shaders.h"
-#include "utility.h"
-#include <array>
-#include <variant>
 
-#include <d3dcompiler.h>
 #include <log.h>
-#pragma comment(lib, "d3dcompiler.lib")
 
 #include <imgui_impl_win32.h>
 

@@ -1,6 +1,7 @@
 #pragma once
-#include <DirectXMath.h>
-#include <windows.h>
+
+
+#include "pch.h"
 
 class Camera {
   public:
