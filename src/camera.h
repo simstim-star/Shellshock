@@ -14,8 +14,9 @@ class Camera {
 	inline void SetAspectRatio(float aspectRatio) { _aspectRatio = aspectRatio; }
 
 	DirectX::XMMATRIX GetProjectionMatrix() const;
-
-  private:
+	DirectX::XMVECTOR GetPosition() const;
+  
+private:
 	DirectX::XMVECTOR _target;
 	DirectX::XMVECTOR _forward;
 	DirectX::XMVECTOR _up;

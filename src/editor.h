@@ -40,6 +40,7 @@ class Editor {
 	ComPtr<ID3D11DepthStencilView> _dsv;
 	ComPtr<ID3D11Buffer> _cbMVP;
 	ComPtr<ID3D11RasterizerState> _rasterState;
+	ComPtr<ID3D11RasterizerState> _rasterStateOutline;
 
 	std::unordered_map<UINT, Model> _models;
 

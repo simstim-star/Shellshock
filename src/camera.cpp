@@ -29,6 +29,15 @@ XMMATRIX Camera::GetProjectionMatrix() const
 	return XMMatrixPerspectiveFovLH(XM_PIDIV4, _aspectRatio, 0.1f, 1000.0f);
 }
 
+DirectX::XMVECTOR Camera::GetPosition() const
+{
+	DirectX::XMVECTOR pos = _forward;
+	DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationY(_angle);
+	pos = DirectX::XMVector3TransformNormal(pos, rotation);
+	pos = DirectX::XMVectorScale(pos, -_zoom);
+	return DirectX::XMVectorAdd(_target, pos);
+}
+
 void Camera::HandleMouse(HWND hwnd)
 {
 	if (GetFocus() != hwnd)

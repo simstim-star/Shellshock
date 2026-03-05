@@ -40,7 +40,7 @@ set(LIB_FILES
     ${imgui_filedialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 )
 
-set(SHADER_FILES shaders/textured.hlsl)
+set(SHADER_FILES shaders/model.hlsl)
 set_source_files_properties(${SHADER_FILES} PROPERTIES LANGUAGE HLSL)
 
 set(ALL_PROJECT_FILES ${SOURCE_FILES} ${HEADER_FILES} ${SHADER_FILES} ${LIB_FILES})

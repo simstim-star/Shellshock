@@ -141,10 +141,8 @@ void TGW::Editor::Resize(UINT width, UINT height)
 	float aspect = viewport.Width / viewport.Height;
 	_matProj = XMMatrixPerspectiveFovLH(_camera.GetAngle(), aspect, 0.1f, 100.0f);
 }
-
 void TGW::Editor::Render()
 {
-	_context->RSSetState(_rasterState.Get());
 	_context->OMSetRenderTargets(1, _rtv.GetAddressOf(), _dsv.Get());
 	_context->ClearRenderTargetView(_rtv.Get(), CLEAR_COLOR);
 	_context->ClearDepthStencilView(_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -154,22 +152,34 @@ void TGW::Editor::Render()
 	_context->PSSetShader(_ps.Get(), nullptr, 0);
 	_context->PSSetSamplers(0, 1, _sampler.GetAddressOf());
 
-	for (auto &model : _models) {
+	for (const auto &[id, model] : _models) {
+		ConstantBuffer cb{
+		  .model = DirectX::XMMatrixTranspose(model.worldMatrix),
+		  .view = DirectX::XMMatrixTranspose(_camera.GetViewMatrix()),
+		  .projection = DirectX::XMMatrixTranspose(_camera.GetProjectionMatrix()),
+		};
+		DirectX::XMStoreFloat3(&cb.cameraPos, _camera.GetPosition());
 
-		MVPConstantBuffer cb;
-		// Transpose for HLSL
-		cb.model = DirectX::XMMatrixTranspose(model.second.worldMatrix); 
-		cb.view = DirectX::XMMatrixTranspose(_camera.GetViewMatrix());
-		cb.projection = DirectX::XMMatrixTranspose(_camera.GetProjectionMatrix());
+		if (_selectedModel && id == _selectedModel.value()) {
+			cb.isSelected = 1.0f;
+			_context->UpdateSubresource(_cbMVP.Get(), 0, nullptr, &cb, 0, 0);
+			_context->VSSetConstantBuffers(0, 1, _cbMVP.GetAddressOf());
+			_context->PSSetConstantBuffers(0, 1, _cbMVP.GetAddressOf());
+			_context->RSSetState(_rasterStateOutline.Get());
+			DrawModel(model); // outline
+		}
+
+		cb.isSelected = 0.0f;
 		_context->UpdateSubresource(_cbMVP.Get(), 0, nullptr, &cb, 0, 0);
 		_context->VSSetConstantBuffers(0, 1, _cbMVP.GetAddressOf());
-		DrawModel(model.second);
+		_context->PSSetConstantBuffers(0, 1, _cbMVP.GetAddressOf());
+		_context->RSSetState(_rasterState.Get());
+		DrawModel(model);
 	}
-	_gui->Render();
 
+	_gui->Render();
 	ASSERT_SUCCEEDED(_swapchain->Present(1, 0));
 }
-
 void TGW::Editor::DrawModel(const Model &model)
 {
 	for (const auto &mesh : model.meshes) {
@@ -192,12 +202,12 @@ void TGW::Editor::Update()
 {
 	_camera.HandleMouse(_hwnd);
 	_matView = _camera.GetViewMatrix();
-	
+
 	std::vector<TGW::GUI::AssetMetadata> assetsMetadata;
 	for (const auto &model : _models) {
 		assetsMetadata.push_back(TGW::GUI::AssetMetadata{
-			.id = model.second.id, 
-			.name = model.second.name,
+		  .id = model.second.id,
+		  .name = model.second.name,
 		});
 	}
 
@@ -211,8 +221,8 @@ void TGW::Editor::LoadAssets()
 {
 	ID3DBlob *vsBlob = nullptr;
 	ID3DBlob *psBlob = nullptr;
-	ASSERT_SUCCEEDED(CompileShader(L"shaders/textured.hlsl", "VSMain", "vs_5_0", &vsBlob));
-	ASSERT_SUCCEEDED(CompileShader(L"shaders/textured.hlsl", "PSMain", "ps_5_0", &psBlob));
+	ASSERT_SUCCEEDED(CompileShader(L"shaders/model.hlsl", "VSMain", "vs_5_0", &vsBlob));
+	ASSERT_SUCCEEDED(CompileShader(L"shaders/model.hlsl", "PSMain", "ps_5_0", &psBlob));
 	ASSERT_SUCCEEDED(_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &_vs));
 	ASSERT_SUCCEEDED(_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &_ps));
 
@@ -230,7 +240,7 @@ void TGW::Editor::LoadAssets()
 
 	D3D11_BUFFER_DESC cbd = {};
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbd.ByteWidth = sizeof(MVPConstantBuffer);
+	cbd.ByteWidth = sizeof(ConstantBuffer);
 	cbd.Usage = D3D11_USAGE_DEFAULT;
 	ASSERT_SUCCEEDED(_device->CreateBuffer(&cbd, nullptr, &_cbMVP));
 
@@ -239,6 +249,12 @@ void TGW::Editor::LoadAssets()
 	rasterDesc.CullMode = D3D11_CULL_BACK;
 	rasterDesc.FrontCounterClockwise = false;
 	ASSERT_SUCCEEDED(_device->CreateRasterizerState(&rasterDesc, &_rasterState));
+
+	D3D11_RASTERIZER_DESC outlineDesc = {};
+	outlineDesc.FillMode = D3D11_FILL_SOLID;
+	outlineDesc.CullMode = D3D11_CULL_FRONT;
+	outlineDesc.FrontCounterClockwise = false;
+	ASSERT_SUCCEEDED(_device->CreateRasterizerState(&outlineDesc, &_rasterStateOutline));
 }
 
 void TGW::Editor::CreateGUI()
@@ -259,9 +275,7 @@ void TGW::Editor::CreateGUI()
 		_selectedModel = id;
 	};
 
-	auto OnRemoveModel = [&](UINT id) {
-		_models.erase(id); 
-	};
+	auto OnRemoveModel = [&](UINT id) { _models.erase(id); };
 
 	_gui = std::make_unique<TGW::GUI::MainUI>(OnLoadModel, OnSelectModel, OnRemoveModel);
 }
